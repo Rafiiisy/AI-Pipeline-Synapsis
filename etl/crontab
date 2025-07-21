@@ -1,0 +1,2 @@
+0 0 * * * cd /app/etl && python etl.py >> /app/etl/logs/cron_etl.log 2>&1
+# 

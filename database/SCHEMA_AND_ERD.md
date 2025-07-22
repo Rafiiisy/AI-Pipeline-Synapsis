@@ -77,30 +77,28 @@ The star schema is designed for analytics and reporting, with fact and dimension
 
 ## 4. ERD Overview
 
-```mermaid
-erDiagram
-    staging_mines ||--o{ staging_production_logs : "mine_id"
-    staging_production_logs }o--|| staging_mines : "mine_id"
-    dwh_dim_date ||--o{ dwh_fact_daily_production : "date_id"
-    dwh_dim_mine ||--o{ dwh_fact_daily_production : "mine_id"
-    dwh_dim_equipment ||--o{ dwh_fact_equipment_metrics : "equipment_id"
-    dwh_dim_date ||--o{ dwh_fact_equipment_metrics : "date_id"
-    dwh_dim_mine ||--o{ dwh_fact_equipment_metrics : "mine_id"
-    dwh_fact_daily_production ||--o{ dwh_fact_equipment_metrics : "date_id"
-    dwh_fact_daily_production ||--o{ dwh_fact_equipment_metrics : "mine_id"
-    dwh_dim_location {
-        location_id UInt64
-        latitude Float64
-        longitude Float64
-        elevation Float64
-        timezone String
-        utc_offset_seconds Int32
-    }
-```
+
+![ERD Overview](../assets/ERD_Overview.png)
+---
+
+## 5. Data Flow Summary
+
+### **Staging to DWH Flow:**
+1. **Production Data**: `staging.production_logs` → `dwh.fact_daily_production` (aggregated by date and mine)
+2. **Equipment Data**: `staging.equipment_sensors` → `dwh.fact_equipment_metrics` (aggregated by date and equipment)
+3. **Mine Data**: `staging.mines` → `dwh.dim_mine` (direct mapping)
+4. **Date Data**: Generated from production dates → `dwh.dim_date`
+5. **Equipment Data**: Generated from sensor data → `dwh.dim_equipment`
+
+### **Weather API Integration:**
+- **Weather Metrics**: API response → `dwh.fact_daily_production` (temperature, precipitation)
+- **Location Data**: API response → `dwh.dim_location` (coordinates, elevation, timezone)
 
 ---
 
 **Note:**
 - Staging tables are for raw/temporary data; DWH tables are for analytics.
 - Fact tables reference dimension tables via foreign keys.
+- Weather data comes from Open-Meteo API for Berau, Kalimantan, Indonesia.
+- Location data is dynamically extracted from the weather API response.
 - Analytical views provide ready-to-use metrics for dashboards and analysis. 

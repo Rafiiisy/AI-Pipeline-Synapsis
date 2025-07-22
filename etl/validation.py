@@ -72,6 +72,27 @@ class DataValidator:
 
     def validate_weather_data(self, production_df, weather_df):
         """Validate weather data completeness for production dates."""
+        # Handle empty weather data
+        if weather_df.empty:
+            self.validation_logger.warning("No weather data available for validation")
+            self.validation_results['missing_weather'] = len(production_df['date_id'].unique())
+            self.validation_results['total_errors'] += len(production_df['date_id'].unique())
+            for date in production_df['date_id'].unique():
+                error_msg = f"Missing weather data for production date: {date}"
+                self.validation_logger.error(error_msg)
+                self.validation_results['details'].append({
+                    'type': 'missing_weather',
+                    'message': error_msg,
+                    'date': date,
+                    'value': None
+                })
+            return False
+        
+        # Check if weather_df has the expected columns
+        if 'date_id' not in weather_df.columns:
+            self.validation_logger.error("Weather data missing 'date_id' column")
+            return False
+        
         prod_dates = set(production_df['date_id'].unique())
         weather_dates = set(weather_df['date_id'].unique())
         missing_dates = prod_dates - weather_dates

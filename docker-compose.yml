@@ -44,7 +44,11 @@ services:
       - CLICKHOUSE_PASSWORD=admin
     depends_on:
       - clickhouse
-    restart: on-failure
+    restart: "no"
+    profiles:
+      - etl
+
+
 
 volumes:
   clickhouse_data:

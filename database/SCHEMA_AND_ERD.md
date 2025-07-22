@@ -52,18 +52,21 @@ The star schema is designed for analytics and reporting, with fact and dimension
 
 - **dwh.dim_location**
   - `location_id` (UInt64): Primary key
+  - `location` (String): Location name (e.g., "Berau, Kalimantan, Indonesia")
   - `latitude`, `longitude`, `elevation`, `timezone`, `utc_offset_seconds`
 
 ### Fact Tables
 - **dwh.fact_daily_production**
   - `date_id` (Date): FK to `dim_date`
   - `mine_id` (String): FK to `dim_mine`
-  - `total_production_daily`, `average_quality_grade`, `equipment_utilization`, `fuel_efficiency`, `temperature_2m_mean`, `precipitation_sum`
+  - `location_id` (UInt64): FK to `dim_location`
+  - `total_production_daily`, `average_quality_grade`, `equipment_utilization`, `fuel_efficiency`, `temperature_2m_mean`, `rainfall_mm`
 
 - **dwh.fact_equipment_metrics**
   - `date_id` (Date): FK to `dim_date`
   - `equipment_id` (String): FK to `dim_equipment`
   - `mine_id` (String): FK to `dim_mine`
+  - `location_id` (UInt64): FK to `dim_location`
   - `total_operational_hours`, `total_maintenance_hours`, `total_fuel_consumption`, `maintenance_alerts`
 
 ---
@@ -91,8 +94,8 @@ The star schema is designed for analytics and reporting, with fact and dimension
 5. **Equipment Data**: Generated from sensor data → `dwh.dim_equipment`
 
 ### **Weather API Integration:**
-- **Weather Metrics**: API response → `dwh.fact_daily_production` (temperature, precipitation)
-- **Location Data**: API response → `dwh.dim_location` (coordinates, elevation, timezone)
+- **Weather Metrics**: API response → `dwh.fact_daily_production` (temperature, rainfall_mm)
+- **Location Data**: API response → `dwh.dim_location` (location name, coordinates, elevation, timezone)
 
 ---
 
@@ -101,4 +104,6 @@ The star schema is designed for analytics and reporting, with fact and dimension
 - Fact tables reference dimension tables via foreign keys.
 - Weather data comes from Open-Meteo API for Berau, Kalimantan, Indonesia.
 - Location data is dynamically extracted from the weather API response.
+- `rainfall_mm` represents daily rainfall in millimeters, sourced from the API's `precipitation_sum` field.
+- `dim_location` contains both location name and geographical coordinates for comprehensive location tracking.
 - Analytical views provide ready-to-use metrics for dashboards and analysis. 

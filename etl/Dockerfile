@@ -58,5 +58,5 @@ echo "Initialization complete."\n' > /app/init.sh && chmod +x /app/init.sh
 # Create the log file to be able to run tail
 RUN touch /var/log/etl.log
 
-# Default: run only the ETL pipeline
-CMD ["python", "/app/etl/etl.py"] 
+# Default: do nothing (ETL should be run manually)
+CMD ["tail", "-f", "/dev/null"] 

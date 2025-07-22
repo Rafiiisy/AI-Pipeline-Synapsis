@@ -25,16 +25,16 @@ WITH daily_aggregated_data AS (
     SELECT
         date_id,
         sum(total_production_daily) AS total_production_per_day,
-        max(precipitation_sum) AS precipitation_sum_per_day
+        max(rainfall_mm) AS rainfall_mm_per_day
     FROM dwh.fact_daily_production
     GROUP BY date_id
 )
 SELECT
     CASE
-        WHEN precipitation_sum_per_day > 1.0 THEN 'Rainy Day'
+        WHEN rainfall_mm_per_day > 1.0 THEN 'Rainy Day'
         ELSE 'Non-Rainy Day'
     END AS day_type,
     avg(total_production_per_day) AS average_daily_production,
-    corr(precipitation_sum_per_day, total_production_per_day) AS rainfall_production_correlation
+    corr(rainfall_mm_per_day, total_production_per_day) AS rainfall_production_correlation
 FROM daily_aggregated_data
 GROUP BY day_type; 

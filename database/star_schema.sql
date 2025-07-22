@@ -33,6 +33,7 @@ PRIMARY KEY equipment_id;
 
 CREATE TABLE IF NOT EXISTS dwh.dim_location (
     location_id UInt64,
+    location String,
     latitude Float64,
     longitude Float64,
     elevation Float64,
@@ -45,12 +46,13 @@ PRIMARY KEY location_id;
 CREATE TABLE IF NOT EXISTS dwh.fact_daily_production (
     date_id Date,
     mine_id String,
+    location_id UInt64,
     total_production_daily Float64,
     average_quality_grade Float32,
     equipment_utilization Float32,
     fuel_efficiency Float32,
     temperature_2m_mean Float32,
-    precipitation_sum Float32
+    rainfall_mm Float32
 ) ENGINE = MergeTree()
 ORDER BY (date_id, mine_id);
 
@@ -58,6 +60,7 @@ CREATE TABLE IF NOT EXISTS dwh.fact_equipment_metrics (
     date_id Date,
     equipment_id String,
     mine_id String,
+    location_id UInt64,
     total_operational_hours UInt8,
     total_maintenance_hours UInt8,
     total_fuel_consumption Float64,

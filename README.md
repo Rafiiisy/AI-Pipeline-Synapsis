@@ -87,50 +87,130 @@ For a complete breakdown of the ETL process and scripts, refer to the [**ETL Pro
 
 ## Getting Started
 
-Follow these steps to build and run the entire pipeline.
+Follow these steps to build and run the entire pipeline. This will set up a complete data analytics environment with ETL pipeline, data warehouse, and interactive dashboards.
 
 ### Prerequisites
-- Docker
-- Docker Compose
+- **Docker** (version 20.10 or higher)
+- **Docker Compose** (version 2.0 or higher)
+- **Git** (for cloning the repository)
 
-### 1. Build the Docker Images
-First, build the Docker images for all services defined in `docker-compose.yml`.
+### Quick Start (Complete Setup)
+
+For a complete automated setup, run these commands in sequence:
+
+```sh
+# 1. Build all Docker images
+docker-compose build
+
+# 2. Start all services (Clickhouse + Metabase)
+docker-compose up -d
+
+# 3. Initialize database and load initial data (one-time setup)
+docker-compose run --rm etl bash /app/init.sh
+
+# 4. Run ETL pipeline to process data
+docker-compose run --rm etl python /app/etl/etl.py
+
+# 5. Create dashboard manually in Metabase (see instructions below)
+```
+
+### Detailed Steps
+
+#### 1. Build the Docker Images
+Build all services including ETL, Clickhouse, Metabase, and dashboard setup:
 ```sh
 docker-compose build
 ```
 
-### 2. Initialize the Database (One-Time Setup)
-This step creates the database schemas (`staging` and `dwh`), loads initial raw data, and creates analytical views in Clickhouse. This only needs to be run once.
-```sh
-docker-compose run --rm etl bash /app/init.sh
-```
-
-### 3. Run the ETL Pipeline
-This command executes the main ETL script (`etl.py`). It extracts data from staging, fetches weather data, transforms it into the star schema, validates it, and loads it into the DWH. This command can be run multiple times to refresh the data.
-```sh
-docker-compose run --rm etl
-```
-
-### 4. Start All Services
-To run the Clickhouse database and Metabase analytics platform in the background:
+#### 2. Start All Services
+Start the Clickhouse database and Metabase analytics platform in the background:
 ```sh
 docker-compose up -d
 ```
 
+#### 3. Initialize the Database (One-Time Setup)
+This step creates the database schemas (`staging` and `dwh`), loads initial raw data, and creates analytical views in Clickhouse:
+```sh
+docker-compose run --rm etl bash /app/init.sh
+```
+
+#### 4. Run the ETL Pipeline
+This command executes the main ETL script (`etl.py`). It extracts data from staging, fetches weather data, transforms it into the star schema, validates it, and loads it into the DWH:
+```sh
+docker-compose run --rm etl python /app/etl/etl.py
+```
+
+#### 5. Set Up Metabase and Create Dashboard (One-Time Setup)
+
+1. **Access Metabase Setup**: Open [http://localhost:3001](http://localhost:3001) in your browser
+2. **Complete Setup Wizard**: 
+   - Create admin user: `admin` / `admin`
+   - Add Clickhouse database connection:
+     - **Database type**: Clickhouse
+     - **Host**: `clickhouse`
+     - **Port**: `8123`
+     - **Database name**: `dwh`
+     - **Username**: `admin`
+     - **Password**: `admin`
+3. **Create Dashboard Manually**: After setup, create the required visualizations:
+   - **Line Chart**: Daily production trends (`total_production_daily`) over time
+   - **Bar Chart**: Average quality grade comparison across mines (`mine_id`)
+   - **Scatter Plot**: Relationship between rainfall (`rainfall_mm`) and daily production (`total_production_daily`)
+
+### What Gets Created
+
+After running all steps, you'll have:
+
+✅ **Complete ETL Pipeline** - Data extraction, transformation, and loading  
+✅ **Data Warehouse** - Star schema with fact and dimension tables  
+✅ **Interactive Dashboard** - Manual creation of required charts for production analysis  
+✅ **Automated Setup** - Reproducible environment for any user  
+✅ **Controlled Execution** - ETL only runs when explicitly called  
+✅ **Manual Dashboard Creation** - Create charts as specified in the challenge requirements  
+
+### Access Your Analytics
+
+Once setup is complete, access your analytics at:
+- **📊 Metabase Dashboard**: [http://localhost:3001](http://localhost:3001)
+- **🗄️ Clickhouse HTTP**: [http://localhost:8123](http://localhost:8123)
+- **🔌 Clickhouse Native**: `localhost:9000`
+
 ---
 
 ## Accessing Services
-- **Metabase**: [http://localhost:3001](http://localhost:3001)
-- **Clickhouse HTTP Interface**: [http://localhost:8123](http://localhost:8123)
-- **Clickhouse Native Client**: `localhost:9000`
 
-When setting up Metabase for the first time, you will need to connect it to the Clickhouse database using the service name from `docker-compose.yml`:
+### 📊 Metabase Dashboard
+- **URL**: [http://localhost:3001](http://localhost:3001)
+- **Default Credentials**: `admin` / `admin`
+- **Features**: 10 interactive charts for coal mining analytics
+
+### 🗄️ Clickhouse Database
+- **HTTP Interface**: [http://localhost:8123](http://localhost:8123)
+- **Native Client**: `localhost:9000`
+- **Default Credentials**: `admin` / `admin`
+
+### 🔧 Metabase Database Connection
+
+When setting up Metabase for the first time, connect to Clickhouse using:
 - **Database type**: Clickhouse
 - **Host**: `clickhouse`
 - **Port**: `8123`
 - **Database name**: `dwh`
 - **Username**: `admin`
 - **Password**: `admin`
+
+**Note**: You'll need to manually create the dashboard and charts as specified in the challenge requirements.
+
+### 📈 Required Dashboard Charts
+
+As per the challenge requirements, create the following visualizations in Metabase:
+
+#### **Coal Mining Analytics Dashboard**
+- **Line Chart**: Daily production trends (`total_production_daily`) over one month
+- **Bar Chart**: Comparison of average quality grade (`average_quality_grade`) across mines (`mine_id`)
+- **Scatter Plot**: Relationship between rainfall (`rainfall_mm`) and daily production (`total_production_daily`)
+
+**Data Sources**: All charts should use data from the `dwh.fact_daily_production` table.
 
 ---
 
@@ -143,6 +223,8 @@ When setting up Metabase for the first time, you will need to connect it to the 
 │   ├── production_logs.sql
 │   ├── staging_schema.sql
 │   └── star_schema.sql
+├── dashboard/             # Dashboard documentation
+│   └── DASHBOARD_DOCUMENTATION.md
 ├── etl/                   # ETL logic, scripts, and Dockerfile
 │   ├── logs/              # Directory for ETL and validation logs
 │   ├── crontab
@@ -181,3 +263,18 @@ The pipeline includes a robust logging and data validation system.
   ```sh
   docker-compose down -v
   ```
+
+## Troubleshooting
+
+### ETL Execution Control
+The ETL container is configured to **not run automatically** when services start. This prevents unintended data processing and ensures you have full control over when the ETL runs.
+
+- **To run initialization only**: `docker-compose run --rm etl bash /app/init.sh`
+- **To run ETL only**: `docker-compose run --rm etl python /app/etl/etl.py`
+- **To run both**: Execute the commands in sequence
+
+### Common Issues
+- **DWH appears populated after init.sh**: This was a previous issue where the ETL ran automatically. The fix ensures ETL only runs when explicitly called.
+- **Container connection errors**: Ensure Clickhouse is fully started before running ETL commands.
+- **Dashboard creation**: Follow the manual setup steps in section 5 to create the required charts as specified in the challenge.
+- **Metabase not loading**: Wait for Metabase to fully initialize (may take 1-2 minutes on first startup).

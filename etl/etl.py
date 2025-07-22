@@ -62,7 +62,10 @@ def fetch_weather_data(start_date, end_date, logger):
             weather_response = resp.json()
             weather_data = weather_response['daily']
             weather_df = pd.DataFrame(weather_data)
-            weather_df = weather_df.rename(columns={'time': 'date_id'})
+            weather_df = weather_df.rename(columns={
+                'time': 'date_id',
+                'precipitation_sum': 'rainfall_mm'  # Rename for clarity
+            })
             weather_df['date_id'] = pd.to_datetime(weather_df['date_id']).dt.date
             
             # Extract location data from API response
@@ -210,6 +213,7 @@ def load_dimensions(client, production_data, equipment_data, mines_data, locatio
         if location_data:
             location_dim_data = [{
                 'location_id': 1,  # Primary location from weather API
+                'location': 'Berau, Kalimantan, Indonesia',  # Location name
                 'latitude': location_data.get('latitude', 2.0167),
                 'longitude': location_data.get('longitude', 117.3000),
                 'elevation': location_data.get('elevation', 44.0),
@@ -224,6 +228,7 @@ def load_dimensions(client, production_data, equipment_data, mines_data, locatio
             # Fallback: create default location if no weather API data
             location_dim_data = [{
                 'location_id': 1,
+                'location': 'Berau, Kalimantan, Indonesia',  # Location name
                 'latitude': 2.0167,
                 'longitude': 117.3000,
                 'elevation': 44.0,
@@ -255,13 +260,16 @@ def load_equipment_metrics(client, equipment_data, production_data, logger):
                 maintenance_alerts=('maintenance_alert', 'sum')
             ).reset_index()
             
-            # Add mine_id (assuming all equipment belongs to the same mine for simplicity)
+            # Add mine_id and location_id (assuming all equipment belongs to the same mine for simplicity)
             # In a real scenario, you'd have equipment-mine mapping
             if not production_data.empty:
                 mine_id = str(production_data['mine_id'].iloc[0])
                 equipment_metrics['mine_id'] = mine_id
             else:
                 equipment_metrics['mine_id'] = '1'  # Default mine_id
+            
+            # Add location_id (all equipment is in Berau location)
+            equipment_metrics['location_id'] = 1
             
             # Ensure proper data types
             equipment_metrics['date_id'] = pd.to_datetime(equipment_metrics['date_id']).dt.date
@@ -296,12 +304,15 @@ def load_to_dwh(client, transformed_data, production_data, equipment_data, mines
         
         # Load daily production metrics
         columns_to_load = [
-            'date_id', 'mine_id', 'total_production_daily',
+            'date_id', 'mine_id', 'location_id', 'total_production_daily',
             'equipment_utilization', 'fuel_efficiency',
             'average_quality_grade', 'temperature_2m_mean', 
-            'precipitation_sum'
+            'rainfall_mm'
         ]
 
+        # Add location_id to the data (all records use location_id = 1 for Berau)
+        transformed_data['location_id'] = 1
+        
         # Ensure all columns exist, fill missing with 0
         for col in columns_to_load:
             if col not in transformed_data:
@@ -314,7 +325,7 @@ def load_to_dwh(client, transformed_data, production_data, equipment_data, mines
         numeric_columns = [
             'total_production_daily', 'equipment_utilization', 
             'fuel_efficiency', 'average_quality_grade',
-            'temperature_2m_mean', 'precipitation_sum'
+            'temperature_2m_mean', 'rainfall_mm'
         ]
         for col in numeric_columns:
             load_data[col] = load_data[col].astype(float)

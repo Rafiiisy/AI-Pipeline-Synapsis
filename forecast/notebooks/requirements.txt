@@ -1,0 +1,27 @@
+# Data manipulation and analysis
+pandas>=1.5.0
+numpy>=1.21.0
+
+# Visualization libraries
+matplotlib>=3.5.0
+seaborn>=0.11.0
+plotly>=5.0.0
+
+# Machine Learning libraries
+scikit-learn>=1.1.0
+xgboost>=1.6.0
+prophet>=1.1.0
+
+# Time series analysis
+statsmodels>=0.13.0
+
+# Jupyter notebook support
+jupyter>=1.0.0
+ipykernel>=6.0.0
+
+# Additional dependencies for Prophet
+pystan>=2.19.0
+cmdstanpy>=1.0.0
+
+# Optional: for better performance
+numba>=0.56.0

@@ -9,6 +9,7 @@ This project implements a complete ETL (Extract, Transform, Load) data pipeline 
 - [Key Features](#key-features)
 - [Data Schema](#data-schema)
 - [ETL Pipeline](#etl-pipeline)
+- [Forecasting Model](#forecasting-model)
 - [Getting Started](#getting-started)
 - [Accessing Services](#accessing-services)
 - [Project Structure](#project-structure)
@@ -48,6 +49,13 @@ The project uses a two-layer database design: a staging area for raw data and a 
 
 For a detailed explanation of the tables, relationships, and an ERD, please see the [**Database Schema Documentation**](database/SCHEMA_AND_ERD.md).
 
+## Project Documentation
+
+### 📋 **Brief Implementation Report**
+- **PDF Version**: [AI Engineer Challenge Brief Report (M. Rafi Syafrinaldi)](report/AI%20Engineer%20Challenge%20Brief%20Report%20Synapsis%20(M.%20Rafi%20Syafrinaldi).pdf)
+- **Online Version**: [Overleaf Document](https://www.overleaf.com/read/trfwqgmmyyjg#399572)
+- **Content**: Pipeline design, ETL process, and validation steps (1-2 pages as per challenge requirements)
+
 ---
 
 ## ETL Pipeline
@@ -55,6 +63,45 @@ For a detailed explanation of the tables, relationships, and an ERD, please see 
 The core logic for data processing is contained in the ETL scripts. The pipeline handles data extraction, calculation of key metrics, data validation, and loading into the DWH.
 
 For a complete breakdown of the ETL process and scripts, refer to the [**ETL Process Documentation**](etl/ETL_PROCESS.md).
+
+---
+
+## Forecasting Model
+
+This project includes a **bonus forecasting component** that implements time-series forecasting to predict next-day coal production. The forecasting system uses historical production data along with weather and equipment metrics to build predictive models.
+
+### Key Features
+- **Multiple Model Types**: Implements both Prophet (Facebook's time-series forecasting library) and XGBoost models
+- **Feature Engineering**: Incorporates weather data, equipment utilization, and historical production patterns
+- **Model Persistence**: Trained models are saved and can be used for production predictions
+- **Interactive Analysis**: Jupyter notebook for exploratory data analysis and model development
+
+### Forecasting Components
+
+#### 📊 **Interactive Notebook**
+- **File**: [`forecast/notebooks/forecasting.ipynb`](forecast/notebooks/forecasting.ipynb)
+- **Purpose**: Complete forecasting workflow including data exploration, feature engineering, model training, and evaluation
+- **Features**: 
+  - Data preprocessing and feature creation
+  - Model comparison between Prophet and XGBoost
+  - Hyperparameter tuning and cross-validation
+  - Model performance visualization
+  - Production prediction pipeline
+
+#### 🤖 **Production Prediction Script**
+- **File**: [`forecast/predict_production.py`](forecast/predict_production.py)
+- **Purpose**: Standalone script for making production predictions using trained models
+- **Usage**: Can be integrated into the ETL pipeline or run independently
+
+#### 📚 **Forecasting Documentation**
+- **File**: [`forecast/README.md`](forecast/README.md)
+- **Purpose**: Detailed documentation of the forecasting methodology, model selection, and implementation details
+
+### Getting Started with Forecasting
+
+1. **Explore the Notebook**: Open [`forecast/notebooks/forecasting.ipynb`](forecast/notebooks/forecasting.ipynb) to understand the complete forecasting workflow
+2. **Run Predictions**: Use the production script for automated predictions
+3. **Review Documentation**: Check [`forecast/README.md`](forecast/README.md) for detailed methodology
 
 ---
 
@@ -206,6 +253,13 @@ As per the challenge requirements, create the following visualizations in Metaba
 │   ├── monitor_etl.py
 │   ├── requirements.txt
 │   └── validation.py
+├── forecast/              # Forecasting models and analysis
+│   ├── notebooks/
+│   │   └── forecasting.ipynb  # Interactive forecasting workflow
+│   ├── models/            # Trained model files
+│   ├── clickhouse_connector.py
+│   ├── predict_production.py
+│   └── README.md
 ├── docker-compose.yml     # Defines and configures all services
 └── README.md              # This file
 ```
@@ -221,7 +275,8 @@ The pipeline includes a robust logging and data validation system.
 ---
 
 ## Future Work
-- **Predictive Modeling**: Implement a time-series forecasting model (e.g., ARIMA, Prophet) to predict next-day coal production, as outlined in the project challenge's bonus task.
+- **Enhanced Forecasting**: Expand the forecasting model with additional features like seasonal patterns, equipment maintenance schedules, and market demand indicators.
+- **Real-time Predictions**: Integrate the forecasting model into the ETL pipeline for real-time production predictions.
 - **CI/CD Integration**: Set up a continuous integration pipeline (e.g., using GitHub Actions) to automate testing and deployment.
 - **Advanced Alerting**: Integrate a more sophisticated alerting system (e.g., email, Slack notifications) for ETL failures or critical data anomalies.
 
@@ -247,7 +302,5 @@ The ETL container is configured to **not run automatically** when services start
 - **To run both**: Execute the commands in sequence
 
 ### Common Issues
-- **DWH appears populated after init.sh**: This was a previous issue where the ETL ran automatically. The fix ensures ETL only runs when explicitly called.
 - **Container connection errors**: Ensure Clickhouse is fully started before running ETL commands.
 - **Dashboard creation**: Follow the manual setup steps in section 5 to create the required charts as specified in the challenge.
-- **Metabase not loading**: Wait for Metabase to fully initialize (may take 1-2 minutes on first startup).

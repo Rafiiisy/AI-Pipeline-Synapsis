@@ -22,35 +22,8 @@ This project implements a complete ETL (Extract, Transform, Load) data pipeline 
 
 The pipeline follows a modern data stack architecture, orchestrated with Docker Compose.
 
-```mermaid
-graph TD
-    subgraph "Data Sources"
-        A[SQL Database: production_logs]
-        B[CSV File: equipment_sensors]
-        C[API: Open-Meteo Weather]
-    end
+![Pipeline Architecture](./assets/pipeline_architecture.png)
 
-    subgraph "ETL Service (Docker)"
-        D[Python ETL Script]
-    end
-
-    subgraph "Data Warehouse (Docker)"
-        E[Clickhouse]
-        E --> |staging_schema| F[Staging Tables]
-        E --> |dwh_schema| G[Fact & Dimension Tables]
-    end
-    
-    subgraph "Analytics (Docker)"
-        H[Metabase Dashboard]
-    end
-    
-    A --> D
-    B --> D
-    C --> D
-    D --> F
-    D --> G
-    G --> H
-```
 
 - **Data Sources**: Raw data comes from a SQL database, a CSV file, and an external weather API.
 - **ETL Service**: A Python script running in a Docker container extracts, transforms, validates, and loads the data.

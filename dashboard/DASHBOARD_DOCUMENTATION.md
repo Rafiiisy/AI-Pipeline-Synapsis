@@ -1,37 +1,26 @@
 # Coal Mining Analytics Dashboard Documentation
 
-This document provides a comprehensive overview of the Coal Mining Analytics Dashboard created in Metabase, including detailed explanations of each chart, their business value, and technical implementation.
-
+This document provides a simple, focused guide for creating the dashboard in Metabase.
 ---
 
-## Dashboard Overview
+## Dashboard Setup Instructions
 
-**Dashboard Name**: Coal Mining Analytics Dashboard  
-**Purpose**: Monitor and analyze coal mining operations performance, quality metrics, and weather impact  
-**Target Users**: Mining operations managers, data analysts, and stakeholders  
-**Update Frequency**: Daily (after ETL runs)
+### **Step 1: Access Metabase**
+- Open [http://localhost:3001](http://localhost:3001) in your browser
+- Login with credentials: `admin` / `admin`
 
----
+### **Step 2: Create New Dashboard**
+1. Click **"New"** → **"Dashboard"**
+2. Name it: **"Coal Mining Analytics Dashboard"**
+3. Click **"Create"**
 
-## Dashboard Sections
+### **Step 3: Create the Charts**
 
-### **1. Production Overview Section**
-
-#### **Chart 1: Daily Production Trends**
-- **Chart Type**: Line Chart
-- **Data Source**: `dwh.fact_daily_production`
-- **X-Axis**: Date (`date_id`)
-- **Y-Axis**: Daily Production (`total_production_daily`)
-- **Time Range**: Last 30 days (configurable)
-- **Display Name**: "Daily Coal Production (Tons)"
-
-**Business Value**:
-- Track daily production performance
-- Identify production trends and patterns
-- Monitor operational efficiency over time
-- Detect anomalies or production drops
-
-**Technical Details**:
+#### **Chart 1: Daily Production Trends (Line Chart)**
+1. Click **"New question"**
+2. Select **"Native query"**
+3. Choose **Clickhouse** database
+4. Enter this SQL:
 ```sql
 SELECT 
     date_id as "Date",
@@ -40,245 +29,292 @@ FROM dwh.fact_daily_production
 WHERE date_id >= today() - 30
 ORDER BY date_id
 ```
+5. Click **"Save"** → Name: **"Daily Production Trends"**
+6. Set visualization to **"Line"**
+7. Click **"Add to dashboard"** → Select your dashboard
 
-#### **Chart 2: Production by Mine**
-- **Chart Type**: Bar Chart
-- **Data Source**: `dwh.fact_daily_production`
-- **X-Axis**: Mine (`mine_id`)
-- **Y-Axis**: Total Production (sum of `total_production_daily`)
-- **Display Name**: "Total Production by Mine"
-
-**Business Value**:
-- Compare performance across different mines
-- Identify high-performing and underperforming mines
-- Allocate resources based on production capacity
-- Track mine-specific trends
-
----
-
-### **2. Quality Metrics Section**
-
-#### **Chart 3: Average Quality Grade by Mine**
-- **Chart Type**: Bar Chart
-- **Data Source**: `dwh.fact_daily_production`
-- **X-Axis**: Mine (`mine_id`)
-- **Y-Axis**: Average Quality Grade (`average_quality_grade`)
-- **Display Name**: "Average Coal Quality Grade by Mine"
-
-**Business Value**:
-- Monitor coal quality across different mines
-- Ensure quality standards are maintained
-- Identify quality issues early
-- Support pricing decisions based on quality
-
-#### **Chart 4: Quality Trends Over Time**
-- **Chart Type**: Line Chart
-- **Data Source**: `dwh.fact_daily_production`
-- **X-Axis**: Date (`date_id`)
-- **Y-Axis**: Average Quality Grade (`average_quality_grade`)
-- **Display Name**: "Coal Quality Trends"
-
-**Business Value**:
-- Track quality consistency over time
-- Identify seasonal quality variations
-- Monitor quality improvement initiatives
-- Alert on quality degradation
-
----
-
-### **3. Equipment Performance Section**
-
-#### **Chart 5: Equipment Utilization Trends**
-- **Chart Type**: Line Chart
-- **Data Source**: `dwh.fact_daily_production`
-- **X-Axis**: Date (`date_id`)
-- **Y-Axis**: Equipment Utilization (`equipment_utilization`)
-- **Display Name**: "Equipment Utilization (%)"
-
-**Business Value**:
-- Monitor equipment efficiency
-- Identify equipment downtime patterns
-- Optimize maintenance schedules
-- Improve operational planning
-
-#### **Chart 6: Fuel Efficiency Analysis**
-- **Chart Type**: Line Chart
-- **Data Source**: `dwh.fact_daily_production`
-- **X-Axis**: Date (`date_id`)
-- **Y-Axis**: Fuel Efficiency (`fuel_efficiency`)
-- **Display Name**: "Fuel Efficiency (Tons/Liter)"
-
-**Business Value**:
-- Track fuel consumption efficiency
-- Identify cost optimization opportunities
-- Monitor equipment performance
-- Support sustainability initiatives
-
----
-
-### **4. Weather Impact Analysis Section**
-
-#### **Chart 7: Rainfall vs Production Scatter Plot**
-- **Chart Type**: Scatter Plot
-- **Data Source**: `dwh.fact_daily_production`
-- **X-Axis**: Daily Rainfall (`precipitation_sum` in mm)
-- **Y-Axis**: Daily Production (`total_production_daily`)
-- **Display Name**: "Rainfall Impact on Production"
-
-**Business Value**:
-- Analyze weather impact on operations
-- Plan production based on weather forecasts
-- Understand seasonal production patterns
-- Optimize operations during adverse weather
-
-**Technical Note**: 
-- `precipitation_sum` represents daily rainfall in millimeters (mm)
-- This matches the challenge requirement for `rainfall_mm`
-- Data sourced from Open-Meteo API for Berau, Kalimantan, Indonesia
-
-#### **Chart 8: Weather Impact Summary**
-- **Chart Type**: Bar Chart
-- **Data Source**: Custom query using `dwh.weather_impact_analysis` view
-- **X-Axis**: Day Type (Rainy/Non-Rainy)
-- **Y-Axis**: Average Daily Production
-- **Display Name**: "Production: Rainy vs Non-Rainy Days"
-
-**Business Value**:
-- Quantify weather impact on production
-- Support operational planning
-- Justify weather-related operational decisions
-- Plan for weather contingencies
-
----
-
-### **5. Equipment Metrics Section**
-
-#### **Chart 9: Equipment Performance by Equipment ID**
-- **Chart Type**: Bar Chart
-- **Data Source**: `dwh.fact_equipment_metrics`
-- **X-Axis**: Equipment (`equipment_id`)
-- **Y-Axis**: Operational Hours (`total_operational_hours`)
-- **Display Name**: "Equipment Operational Hours"
-
-**Business Value**:
-- Monitor individual equipment performance
-- Identify equipment requiring maintenance
-- Optimize equipment allocation
-- Track equipment utilization
-
-#### **Chart 10: Maintenance Alerts Trend**
-- **Chart Type**: Line Chart
-- **Data Source**: `dwh.fact_equipment_metrics`
-- **X-Axis**: Date (`date_id`)
-- **Y-Axis**: Maintenance Alerts (`maintenance_alerts`)
-- **Display Name**: "Maintenance Alerts Over Time"
-
-**Business Value**:
-- Track maintenance requirements
-- Plan preventive maintenance
-- Reduce unplanned downtime
-- Optimize maintenance schedules
-
----
-
-## Dashboard Filters
-
-### **Global Filters**:
-1. **Date Range**: Filter all charts by date period
-2. **Mine Selection**: Filter by specific mines
-3. **Equipment Selection**: Filter by specific equipment
-4. **Weather Conditions**: Filter by rainy/non-rainy days
-
-### **Filter Implementation**:
+#### **Chart 2: Average Quality Grade by Mine (Bar Chart)**
+1. Click **"New question"**
+2. Select **"Native query"**
+3. Choose **Clickhouse** database
+4. Enter this SQL:
 ```sql
--- Example: Date Range Filter
-WHERE date_id BETWEEN {{start_date}} AND {{end_date}}
-
--- Example: Mine Filter
-WHERE mine_id IN ({{selected_mines}})
-
--- Example: Weather Filter
-WHERE CASE 
-    WHEN precipitation_sum > 1.0 THEN 'Rainy'
-    ELSE 'Non-Rainy'
-END = {{weather_condition}}
+SELECT 
+    mine_id as "Mine",
+    AVG(average_quality_grade) as "Average Quality Grade"
+FROM dwh.fact_daily_production
+GROUP BY mine_id
+ORDER BY "Average Quality Grade" DESC
 ```
+5. Click **"Save"** → Name: **"Average Quality Grade by Mine"**
+6. Set visualization to **"Bar"**
+7. Click **"Add to dashboard"** → Select your dashboard
+
+#### **Chart 3: Rainfall vs Production (Scatter Plot)**
+1. Click **"New question"**
+2. Select **"Native query"**
+3. Choose **Clickhouse** database
+4. Enter this SQL:
+```sql
+SELECT 
+    rainfall_mm as "Daily Rainfall (mm)",
+    total_production_daily as "Daily Production (Tons)"
+FROM dwh.fact_daily_production
+WHERE rainfall_mm IS NOT NULL
+ORDER BY rainfall_mm
+```
+5. Click **"Save"** → Name: **"Rainfall Impact on Production"**
+6. Set visualization to **"Scatter"**
+7. Click **"Add to dashboard"** → Select your dashboard
+
+### **Step 4: Create KPI Cards**
+
+#### **KPI 1: Total Production (Last 30 Days)**
+1. Click **"New question"**
+2. Select **"Native query"**
+3. Choose **Clickhouse** database
+4. Enter this SQL:
+```sql
+SELECT 
+    SUM(total_production_daily) as "Total Production (Tons)"
+FROM dwh.fact_daily_production
+WHERE date_id >= today() - 30
+```
+5. Click **"Save"** → Name: **"Total Production (30 Days)"**
+6. Set visualization to **"Number"**
+7. Click **"Add to dashboard"** → Select your dashboard
+
+#### **KPI 2: Average Daily Production**
+1. Click **"New question"**
+2. Select **"Native query"**
+3. Choose **Clickhouse** database
+4. Enter this SQL:
+```sql
+SELECT 
+    AVG(total_production_daily) as "Average Daily Production (Tons)"
+FROM dwh.fact_daily_production
+WHERE date_id >= today() - 30
+```
+5. Click **"Save"** → Name: **"Average Daily Production"**
+6. Set visualization to **"Number"**
+7. Click **"Add to dashboard"** → Select your dashboard
+
+#### **KPI 3: Average Equipment Utilization**
+1. Click **"New question"**
+2. Select **"Native query"**
+3. Choose **Clickhouse** database
+4. Enter this SQL:
+```sql
+SELECT 
+    AVG(equipment_utilization) as "Average Equipment Utilization (%)"
+FROM dwh.fact_daily_production
+WHERE date_id >= today() - 30
+```
+5. Click **"Save"** → Name: **"Average Equipment Utilization"**
+6. Set visualization to **"Number"**
+7. Click **"Add to dashboard"** → Select your dashboard
+
+#### **KPI 4: Average Quality Grade**
+1. Click **"New question"**
+2. Select **"Native query"**
+3. Choose **Clickhouse** database
+4. Enter this SQL:
+```sql
+SELECT 
+    AVG(average_quality_grade) as "Average Quality Grade"
+FROM dwh.fact_daily_production
+WHERE date_id >= today() - 30
+```
+5. Click **"Save"** → Name: **"Average Quality Grade"**
+6. Set visualization to **"Number"**
+7. Click **"Add to dashboard"** → Select your dashboard
+
+### **Step 5: Create Additional Insightful Charts**
+
+#### **Chart 4: Equipment Utilization Trends (Line Chart)**
+1. Click **"New question"**
+2. Select **"Native query"**
+3. Choose **Clickhouse** database
+4. Enter this SQL:
+```sql
+SELECT 
+    date_id as "Date",
+    AVG(equipment_utilization) as "Equipment Utilization (%)"
+FROM dwh.fact_daily_production
+WHERE date_id >= today() - 30
+GROUP BY date_id
+ORDER BY date_id
+```
+5. Click **"Save"** → Name: **"Equipment Utilization Trends"**
+6. Set visualization to **"Line"**
+7. Click **"Add to dashboard"** → Select your dashboard
+
+#### **Chart 5: Weather Impact Summary (Bar Chart)**
+1. Click **"New question"**
+2. Select **"Native query"**
+3. Choose **Clickhouse** database
+4. Enter this SQL:
+```sql
+SELECT 
+    CASE 
+        WHEN rainfall_mm > 1.0 THEN 'Rainy Days (>1mm)'
+        ELSE 'Non-Rainy Days (≤1mm)'
+    END as "Weather Condition",
+    AVG(total_production_daily) as "Average Daily Production (Tons)"
+FROM dwh.fact_daily_production
+WHERE rainfall_mm IS NOT NULL
+GROUP BY "Weather Condition"
+ORDER BY "Average Daily Production (Tons)" DESC
+```
+5. Click **"Save"** → Name: **"Weather Impact Summary"**
+6. Set visualization to **"Bar"**
+7. Click **"Add to dashboard"** → Select your dashboard
+
+#### **Chart 6: Maintenance Alerts Trend (Line Chart)**
+1. Click **"New question"**
+2. Select **"Native query"**
+3. Choose **Clickhouse** database
+4. Enter this SQL:
+```sql
+SELECT 
+    date_id as "Date",
+    SUM(maintenance_alerts) as "Total Maintenance Alerts"
+FROM dwh.fact_equipment_metrics
+WHERE date_id >= today() - 30
+GROUP BY date_id
+ORDER BY date_id
+```
+5. Click **"Save"** → Name: **"Maintenance Alerts Trend"**
+6. Set visualization to **"Line"**
+7. Click **"Add to dashboard"** → Select your dashboard
+---
+
+## Data Source Information
+
+### **Primary Tables**
+
+#### **`dwh.fact_daily_production`** - Main production metrics
+| Column | Description | Data Type |
+|--------|-------------|-----------|
+| `date_id` | Date of production | Date |
+| `mine_id` | Mine identifier | String |
+| `location_id` | Location reference | UInt64 |
+| `total_production_daily` | Daily coal production in tons | Float64 |
+| `average_quality_grade` | Average coal quality grade | Float32 |
+| `equipment_utilization` | Equipment utilization percentage | Float32 |
+| `fuel_efficiency` | Fuel efficiency (tons per liter) | Float32 |
+| `temperature_2m_mean` | Average daily temperature (°C) | Float32 |
+| `rainfall_mm` | Daily rainfall in millimeters | Float32 |
+
+#### **`dwh.fact_equipment_metrics`** - Equipment performance data
+| Column | Description | Data Type |
+|--------|-------------|-----------|
+| `date_id` | Date of metrics | Date |
+| `equipment_id` | Equipment identifier | String |
+| `mine_id` | Mine identifier | String |
+| `location_id` | Location reference | UInt64 |
+| `total_operational_hours` | Total operational hours | UInt8 |
+| `total_maintenance_hours` | Total maintenance hours | UInt8 |
+| `total_fuel_consumption` | Total fuel consumption | Float64 |
+| `maintenance_alerts` | Number of maintenance alerts | UInt8 |
+
+### **Data Availability**
+- Data is populated after running the ETL pipeline
+- Updates daily when ETL runs
+- Historical data covers multiple months
+- Weather data sourced from Open-Meteo API for Berau, Kalimantan, Indonesia
 
 ---
 
-## Key Performance Indicators (KPIs)
+## Business Value & Insights
 
-### **Production KPIs**:
-- **Daily Production Target**: Track against production goals
-- **Production Efficiency**: Compare actual vs planned production
-- **Quality Compliance**: Monitor quality standards adherence
+### **Charts**
 
-### **Operational KPIs**:
-- **Equipment Utilization Rate**: Target > 80%
-- **Fuel Efficiency**: Monitor cost per ton
-- **Maintenance Response Time**: Track maintenance efficiency
+#### **Chart 1: Daily Production Trends**
+- **Purpose**: Monitor daily production performance
+- **Insights**: Identify trends, detect anomalies, track operational efficiency
+- **Action**: Alert on production drops, plan resource allocation
 
-### **Weather KPIs**:
-- **Weather Impact Score**: Quantify weather effect on production
-- **Rainy Day Performance**: Compare production during adverse weather
+#### **Chart 2: Average Quality Grade by Mine**
+- **Purpose**: Compare coal quality across different mines
+- **Insights**: Identify quality issues, ensure standards compliance
+- **Action**: Focus improvement efforts on underperforming mines
+
+#### **Chart 3: Rainfall vs Production**
+- **Purpose**: Analyze weather impact on mining operations
+- **Insights**: Understand seasonal patterns, plan for weather contingencies
+- **Action**: Optimize operations during adverse weather conditions
+
+### **KPI Metrics**
+
+#### **KPI 1: Total Production (Last 30 Days)**
+- **Purpose**: Monitor overall production performance
+- **Insights**: Track total output, compare with targets
+- **Action**: Assess production goals achievement
+
+#### **KPI 2: Average Daily Production**
+- **Purpose**: Monitor daily production consistency
+- **Insights**: Identify production stability, detect trends
+- **Action**: Plan resource allocation, set daily targets
+
+#### **KPI 3: Average Equipment Utilization**
+- **Purpose**: Monitor equipment efficiency
+- **Insights**: Track operational efficiency, identify optimization opportunities
+- **Action**: Improve equipment planning, reduce downtime
+
+#### **KPI 4: Average Quality Grade**
+- **Purpose**: Monitor product quality consistency
+- **Insights**: Track quality standards, identify quality trends
+- **Action**: Maintain quality standards, focus improvement efforts
+
+### **Additional Insightful Charts**
+
+#### **Chart 4: Equipment Utilization Trends**
+- **Purpose**: Monitor equipment efficiency and operational planning
+- **Insights**: Identify equipment downtime patterns, optimize maintenance schedules
+- **Action**: Improve operational planning, reduce unplanned downtime
+
+#### **Chart 5: Weather Impact Summary**
+- **Purpose**: Quantify weather impact on production performance
+- **Insights**: Understand weather-related production patterns, plan for weather contingencies
+- **Action**: Optimize operations during adverse weather, justify weather-related decisions
+
+#### **Chart 6: Maintenance Alerts Trend**
+- **Purpose**: Track maintenance requirements and planning
+- **Insights**: Identify maintenance patterns, optimize maintenance schedules
+- **Action**: Reduce unplanned downtime, improve equipment reliability
 
 ---
 
-## Dashboard Refresh Schedule
+## Technical Notes
 
-- **Data Refresh**: Daily after ETL completion
-- **Chart Refresh**: Real-time when dashboard is accessed
-- **Alert Thresholds**: Set for critical metrics
+### **Database Connection**
+- **Host**: `clickhouse`
+- **Port**: `8123`
+- **Database**: `dwh`
+- **Username**: `admin`
+- **Password**: `admin`
 
----
+### **Query Performance**
+- All queries use indexed columns for optimal performance
+- Data is pre-aggregated in the fact table
+- Queries are optimized for Clickhouse columnar storage
 
-## Technical Implementation
-
-### **Data Sources**:
-- **Primary**: `dwh.fact_daily_production`
-- **Secondary**: `dwh.fact_equipment_metrics`
-- **Views**: `dwh.daily_summary_metrics`, `dwh.weather_impact_analysis`
-
-### **Performance Optimization**:
-- Use indexed columns for filtering
-- Implement query caching
-- Optimize chart rendering
-
-### **Access Control**:
-- Role-based access to different dashboard sections
-- Data-level security based on user permissions
-
----
-
-## Future Enhancements
-
-### **Planned Additions**:
-1. **Predictive Analytics**: Production forecasting
-2. **Real-time Alerts**: Automated notifications for anomalies
-3. **Mobile Dashboard**: Responsive design for field operations
-4. **Drill-down Capabilities**: Detailed analysis views
-
-### **Advanced Analytics**:
-1. **Machine Learning Integration**: Predictive maintenance
-2. **Cost Analysis**: Operational cost tracking
-3. **Sustainability Metrics**: Environmental impact monitoring
+### **Data Refresh**
+- Dashboard data refreshes automatically when accessed
+- ETL runs daily to update the underlying data
+- No manual refresh required
 
 ---
 
 ## Troubleshooting
 
 ### **Common Issues**:
-1. **No Data Displayed**: Check ETL completion and data freshness
-2. **Slow Loading**: Verify database performance and query optimization
-3. **Incorrect Values**: Validate data transformation logic
+1. **No data displayed**: Ensure ETL has been run and data exists in `dwh.fact_daily_production`
+2. **Connection errors**: Verify Clickhouse is running and accessible
+3. **Empty charts**: Check that the date range contains data
 
-### **Support Contacts**:
-- **Technical Issues**: Data Engineering Team
-- **Business Questions**: Operations Management
-- **Dashboard Access**: IT Support
-
----
-
-**Last Updated**: [Current Date]  
-**Dashboard Version**: 1.0  
-**Documentation Version**: 1.0 
+### **Verification Steps**:
+1. Run: `docker-compose exec clickhouse clickhouse-client --query "SELECT COUNT(*) FROM dwh.fact_daily_production"`
+2. Should return a number > 0
+3. If 0, run the ETL: `docker-compose run --rm etl python /app/etl/etl.py`

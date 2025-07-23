@@ -106,6 +106,10 @@ def transform_data(production_data, equipment_data, weather_data, validator, log
 
         # Aggregate sensor data by day (since it has no mine_id)
         equipment_data['date_id'] = pd.to_datetime(equipment_data['timestamp']).dt.date
+        
+        # Count total equipment pieces for proper utilization calculation
+        total_equipment = equipment_data['equipment_id'].nunique()
+        
         daily_equipment_data = equipment_data.groupby(['date_id']).agg(
             operational_hours=('status', lambda s: (s == 'active').sum()),
             fuel_consumption=('fuel_consumption', 'sum')
@@ -123,14 +127,17 @@ def transform_data(production_data, equipment_data, weather_data, validator, log
             merged_data = pd.merge(
                 merged_data,
                 weather_data,
-                on='date_id',
+                on=['date_id'],
                 how='left'
             )
         
         # Calculate metrics
         transformed_data = merged_data.copy()
+        # Calculate equipment utilization as percentage of total possible operational hours
+        # Total possible hours = number of equipment × 24 hours per day
+        total_possible_hours = total_equipment * 24
         transformed_data['equipment_utilization'] = (
-            transformed_data['operational_hours'].fillna(0) / 24 * 100
+            transformed_data['operational_hours'].fillna(0) / total_possible_hours * 100
         )
         transformed_data['fuel_efficiency'] = (
             transformed_data['total_production_daily'] / 
